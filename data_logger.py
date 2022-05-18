@@ -1,40 +1,43 @@
-import os
-from collections import OrderedDict as ODict
-import numpy as np
-from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
+
+# Albumentations Set up
+class AlbumData(dataset):
+
+    def __init__(self, x=x_train, y=y_train, transforms=None):
+        super().__init__()
+
+        self.x = x
+        self.y = y
+        self.transform = transforms
+
+        if self.y is None:
+            self.len = len(self.x)
+        else:
+            try:
+                assert len(self.x) == len(self.y)
+                self.len = len(self.x)
+            except AssertionError:
+                print(f" the size of x ({len(self.x)} is different from y ({len(self.y)})")
+
+    def __len__(self):
+        return self.len
+
+    def __getitem__(self, item):
+        if self.y is not None:
+            image, label = self.x[item], self.y[item]
+            image = np.expand_dims(image, -1).astype(np.uint8)
+            label = torch.from_numpy(np.array(label)).type(torch.LongTensor)
+        else:
+            image, label = self.x[item], None
+
+        if self.transform is not None:
+            aug_img = self.transform(image=image)
+            image = aug_img["image"].astype(np.uint8).reshape(28, 28, 1)
+
+        image = transforms.ToTensor()(image)
+
+        if self.y is None:
+            return image
+        else:
+            return image, label
 
 
-datadir = os.getcwd() + "/data"
-filenames = ["train.csv", "test.csv"]
-datadict = ODict()
-for files in filenames:
-    try:
-        with open(datadir + "/" + files, mode="r") as csvfile:
-            datadict[files] = np.loadtxt(csvfile, delimiter=",", skiprows=1)
-            csvfile.close()
-        print("file acquired: ./{}".format(files))
-    except FileNotFoundError:
-        print("file will be skipped ./{}".format(files))
-print(datadict.keys(), filenames)
-
-trainmnist = datadict[filenames[0]]
-testmnist = datadict[filenames[-1]]
-
-train_labels = trainmnist[:, 0].reshape(-1)
-trainmnist = trainmnist[:, 1:].reshape(-1, 28, 28)
-testmnist = testmnist.reshape(-1, 28, 28)
-print(trainmnist.shape, train_labels.shape, testmnist.shape)
-
-x_train, x_test, y_train, y_test = train_test_split(trainmnist, train_labels,
-                                                    test_size=0.2)
-x_mnist = testmnist
-
-for idx in [x_train, x_test, y_train, y_test, x_mnist]:
-    print(f'Shape: {idx.shape}')
-
-fig, ax = plt.subplots(1, 3, sharex="all", squeeze=True)
-for img, x in zip(ax, [x_train, x_test, x_mnist]):
-    img.set_axis_off()
-    img=img.imshow(x[-1], cmap="gray");
-plt.show()
