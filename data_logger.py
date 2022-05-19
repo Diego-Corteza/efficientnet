@@ -7,40 +7,48 @@ import torch
 from torchvision import transforms
 from torch.utils.data.dataset import Dataset
 
-# locate, reshape and separate data into training and validation sets
-datadir = os.getcwd() + "/data"
-filenames = ["train.csv", "test.csv"]
-datadict = ODict()
-for files in filenames:
-    try:
-        with open(datadir + "/" + files, mode="r") as csvfile:
-            datadict[files] = np.loadtxt(csvfile, delimiter=",", skiprows=1)
-            csvfile.close()
-        print("file acquired: ./{}".format(files))
-    except FileNotFoundError:
-        print("file will be skipped ./{}".format(files))
-print(datadict.keys(), filenames)
+import argparse
+import logging
+from typing import Dict, List, Any
 
-trainmnist = datadict[filenames[0]]
-testmnist = datadict[filenames[-1]]
 
-train_labels = trainmnist[:, 0].reshape(-1)
-trainmnist = trainmnist[:, 1:].reshape(-1, 28, 28)
-testmnist = testmnist.reshape(-1, 28, 28)
-print(trainmnist.shape, train_labels.shape, testmnist.shape)
+def load(data_dir: str = "/data") -> None:
 
-x_train, x_test, y_train, y_test = train_test_split(trainmnist, train_labels,
-                                                    test_size=0.2)
-x_mnist = testmnist
+    # locate, reshape and separate data into training and validation sets
+    datadir = os.getcwd() + data_dir
 
-for idx in [x_train, x_test, y_train, y_test, x_mnist]:
-    print(f'Shape: {idx.shape}')
+    filenames = ["train.csv", "test.csv"]
+    datadict = ODict()
+    for files in filenames:
+        try:
+            with open(datadir + "/" + files, mode="r") as csvfile:
+                datadict[files] = np.loadtxt(csvfile, delimiter=",", skiprows=1)
+                csvfile.close()
+            logging.info("file acquired: ./{}".format(files))
+        except FileNotFoundError:
+            logging.critical("file will be skipped ./{}".format(files))
+    logging.info(datadict.keys(), filenames)
 
-fig, ax = plt.subplots(1, 3, sharex="all", squeeze=True)
-for imgset, x in zip(ax, [x_train, x_test, x_mnist]):
-    imgset.set_axis_off()
-    mnist_set = imgset.imshow(x[-1], cmap="gray")
-plt.show()
+    trainmnist = datadict[filenames[0]]
+    testmnist = datadict[filenames[-1]]
+
+    train_labels = trainmnist[:, 0].reshape(-1)
+    trainmnist = trainmnist[:, 1:].reshape(-1, 28, 28)
+    testmnist = testmnist.reshape(-1, 28, 28)
+    print(trainmnist.shape, train_labels.shape, testmnist.shape)
+
+    x_train, x_test, y_train, y_test = train_test_split(trainmnist, train_labels,
+                                                        test_size=0.2)
+    x_mnist = testmnist
+
+    for idx in [x_train, x_test, y_train, y_test, x_mnist]:
+        print(f'Shape: {idx.shape}')
+
+    fig, ax = plt.subplots(1, 3, sharex="all", squeeze=True)
+    for imgset, x in zip(ax, [x_train, x_test, x_mnist]):
+        imgset.set_axis_off()
+        mnist_set = imgset.imshow(x[-1], cmap="gray")
+    plt.show()
 
 
 # Albumentations Set up
@@ -53,7 +61,9 @@ class AlbumData(Dataset):
         transforms: None
     """
 
-    def __init__(self, x=x_train, y=y_train, transforms=None):
+    # def __init__(self, x=x_train, y=y_train, transforms=None):
+    def __init__(self, x, y, transforms=None):
+
         super().__init__()
 
         self.x = x
@@ -91,6 +101,10 @@ class AlbumData(Dataset):
         else:
             return image, label
 
+# class AlbumDataPair(AlbumData):
+#     def __getitem__(self, item):
+#         image = super(AlbumDataPair, self).__getitem__()
+#         label = ...
 
 def main():
     load()
