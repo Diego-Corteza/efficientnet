@@ -3,7 +3,6 @@ from collections import OrderedDict as ODict
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from albumentations import *
-from data_logger import AlbumData
 import torch
 from torchvision import transforms
 from torch.utils.data.dataset import Dataset
@@ -43,8 +42,16 @@ for imgset, x in zip(ax, [x_train, x_test, x_mnist]):
     mnist_set = imgset.imshow(x[-1], cmap="gray")
 plt.show()
 
+
 # Albumentations Set up
 class AlbumData(Dataset):
+    """
+        This class receives both training sets and the set of transformations required and then
+        turns them into a tensor
+        x_data: x_train
+        y_data: y_train
+        transforms: None
+    """
 
     def __init__(self, x=x_train, y=y_train, transforms=None):
         super().__init__()
@@ -85,36 +92,39 @@ class AlbumData(Dataset):
             return image, label
 
 
+def main():
+    load()
+    albumentations_transform = Compose([ShiftScaleRotate(shift_limit=0.11,
+                                                         scale_limit=0.1,
+                                                         rotate_limit=30,
+                                                         interpolation=cv2.INTER_LANCZOS4,
+                                                         border_mode=cv2.BORDER_CONSTANT,
+                                                         p=0.75),
+                                        OneOf([OpticalDistortion(border_mode=cv2.BORDER_CONSTANT,
+                                                                 p=1.0),
+                                               GridDistortion(border_mode=cv2.BORDER_CONSTANT,
+                                                              p=1.0)],
+                                              p=0.75),
+                                        Normalize(mean=[0.1307], std=[0.3081])])
+    albumentations_valtransform = Compose([Normalize(mean=[0.1307], std=[0.3081])])
+
+    test_set = AlbumData(transforms=albumentations_transform)
+    fig, axes = plt.subplots(5, 5, figsize=(8, 8), sharex="all", sharey="all")
+    _plots = None
+
+    # test visualization
+    testnum = np.random.randint(0, 28000)
+    for axs in axes:
+        for ax in axs:
+            data = test_set.__getitem__(testnum)
+            imgset = ax.imshow(data[0].reshape(28, 28), cmap='gray')
+            imgset = ax.set_title(str(data[1].numpy()))
+            imgset = ax.set_axis_off()
+
+    plt.subplots_adjust(hspace=0.25)
+    plt.tight_layout()
+    plt.show()
 
 
-
-albumentations_transform = Compose([ShiftScaleRotate(shift_limit=0.11,
-                                                     scale_limit=0.1,
-                                                     rotate_limit=30,
-                                                     interpolation=cv2.INTER_LANCZOS4,
-                                                     border_mode=cv2.BORDER_CONSTANT,
-                                                     p=0.75),
-                                    OneOf([OpticalDistortion(border_mode=cv2.BORDER_CONSTANT,
-                                                             p=1.0),
-                                           GridDistortion(border_mode=cv2.BORDER_CONSTANT,
-                                                          p=1.0)],
-                                          p=0.75),
-                                    Normalize(mean=[0.1307], std=[0.3081])])
-albumentations_valtransform = Compose([Normalize(mean=[0.1307], std=[0.3081])])
-
-test_set = AlbumData(transforms=albumentations_transform)
-fig, axes = plt.subplots(5, 5, figsize=(8, 8), sharex="all", sharey="all")
-_plots = None
-
- #test visualization
-testnum = np.random.randint(0, 28000)
-for axs in axes:
-    for ax in axs:
-        data = test_set.__getitem__(testnum)
-        imgset = ax.imshow(data[0].reshape(28, 18), cmap='gray')
-        imgset = ax.set_title(str(data[1].np()))
-        imgset = ax.set_axis_off()
-
-plt.subplots_adjust(hspace=0.25)
-plt.tight_layout()
-plt.show()
+if __name__ == "__main__":
+    main()
