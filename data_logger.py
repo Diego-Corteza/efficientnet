@@ -1,6 +1,9 @@
 import os
 from collections import OrderedDict as ODict
+
+import albumentations
 import matplotlib.pyplot as plt
+import torchvision.transforms
 from sklearn.model_selection import train_test_split
 from albumentations import *
 import torch
@@ -10,8 +13,6 @@ from torch.utils.data.dataset import Dataset
 import argparse
 import logging
 from typing import Dict, List, Any, Tuple
-
-
 
 
 
@@ -31,6 +32,7 @@ class AlbumData(Dataset):
         super().__init__()
 
         x,y = self.load()
+
         self.x = x
         self.y = y
         self.transform = transforms or self.create_augmentations()
@@ -103,7 +105,7 @@ class AlbumData(Dataset):
                                                              interpolation=cv2.INTER_LANCZOS4,
                                                              border_mode=cv2.BORDER_CONSTANT,
                                                              p=0.75),
-                                                Resize(... )
+                                            Resize(height=224, width=224),
                                             OneOf([OpticalDistortion(border_mode=cv2.BORDER_CONSTANT,
                                                                      p=1.0),
                                                    GridDistortion(border_mode=cv2.BORDER_CONSTANT,

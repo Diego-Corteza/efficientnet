@@ -133,7 +133,7 @@ class Training:
 
     def train(self, *args, **kwargs):
         logging.info("entering training")
-        criterion = torch.nn.MSELoss()
+        criterion = torch.nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(
             self.__model.parameters(), self.lr, momentum=0.5, nesterov=True
         )
