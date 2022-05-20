@@ -124,52 +124,90 @@ class Training:
         loss = loss.mean()
         return loss
 
-    def train(self):
+    def train(self, *args, **kwargs):
+        logging.info("entering training")
+        criterion = torch.nn.MSELoss()
+        optimizer = torch.optim.SGD(
+            self.__model.parameters(), self.lr, momentum=0.5, nesterov=True
+        )
+
+        epoch_loss = []
+        epoch_batch = 10
+
+        # images, gts = self.__training_dataloader
+        # images.to(self.__device)
+        # gts.to(self.__device)
+
+        logging.info("about to start training")
+        for epoch in range(self.epochs):
+
+            loss = self.train_single_epoch(optimizer, criterion)
+            epoch_loss.append(loss)
+
+            # self.validate(images, gts)
+            # self.test(images, gts)
+            if epoch >= self.MAX_EPOCHS:
+                break
+        # self.finalize()
+        logging.info("done training")
+        return True
+
+
+    def train_single_epoch(self, optimzier, criterion):
         """
         Method to train a model given a dataset.
         """
 
         self.__model.train()
-        images, gts = self.__training_dataloader
-        images.to(self.__device)
-        gts.to(self.__device)
+        self.__model.to(self.__device)
 
-        # x = self._preprocess(x)
-
-        epoch_loss = []
-        epoch_batch = 10
-
-        for epoch in range(1, self.epochs+1):  
-
-            y_pred = self.__model(images)
+        running_loss = 0.0
+        num_batches = 1
+        for data in self.__training_dataloader:
 
             # Gradiends are turned to zero in order to avoid acumulation
             self.__model.zero_grad()
 
-            # loss
-            train_loss = self.cross_entropy(y_pred, gts)
-            epoch_loss.append(train_loss.item())
+            images, gts = data
+            images.to(self.__device)
+            gts.to(self.__device)
 
-            # Backprop
+            # forward pass
+            y_pred = self.__model(images)
+
+            # loss
+            train_loss = criterion(y_pred, gts)
             train_loss.backward()
 
-            # # updates
-            with torch.no_grad():
-                for param in self.__model.parameters():
-                    param -= self.lr * param.grad
+            optimzier.step()
 
-            # running_loss += train_loss.item()
+            running_loss += train_loss.item()
+            num_batches += 1
 
-            # # loss logger
-            # self.log_metric("train_loss", train_loss)
+            # tensorboard logging
+            # mlflow logging
+            print(train_loss)
 
-            if not epoch % epoch_batch:
-                print(f"Epoch {epoch}/{self.epochs} Loss {np.mean(epoch_loss):.5f}") 
+        # Backprop
+        # train_loss.backward()
 
-            if epoch >= self.MAX_EPOCHS:
-                break
+        # # # updates
+        # with torch.no_grad():
+        #     for param in self.__model.parameters():
+        #         param -= self.lr * param.grad
 
-        return True
+        # running_loss += train_loss.item()
+
+        # # loss logger
+        # self.log_metric("train_loss", train_loss)
+
+        # if not epoch % epoch_batch:
+        #     print(f"Epoch {epoch}/{self.epochs} Loss {np.mean(epoch_loss):.5f}")
+        #
+        # if epoch >= self.MAX_EPOCHS:
+        #     break
+        avg_loss = running_loss / num_batches
+        return avg_loss
 
 
     def log_metric(self, metric_key: str, metric_value: float) -> None:
