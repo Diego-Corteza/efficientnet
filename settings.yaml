@@ -1,7 +1,62 @@
-# settings.yaml file
-config1:
-  "input shape":(1, 1, 28, 28)
-  "nclasses": 10
-  "block type": "bottleneck"
-  "base_channels": 64
-  "depth": 20
+__version__: 1.1.0
+transform:
+  __class_fullname__: Compose
+  additional_targets: {}
+  bbox_params: null
+  keypoint_params: null
+  p: 1.0
+  transforms:
+  - __class_fullname__: ShiftScaleRotate
+    always_apply: false
+    border_mode: 0
+    interpolation: 4
+    mask_value: null
+    p: 0.75
+    rotate_limit:
+    - -30
+    - 30
+    scale_limit:
+    - -0.09999999999999998
+    - 0.10000000000000009
+    shift_limit_x:
+    - -0.11
+    - 0.11
+    shift_limit_y:
+    - -0.11
+    - 0.11
+    value: null
+  - __class_fullname__: OneOf
+    p: 0.75
+    transforms:
+    - __class_fullname__: OpticalDistortion
+      always_apply: false
+      border_mode: 0
+      distort_limit:
+      - -0.05
+      - 0.05
+      interpolation: 1
+      mask_value: null
+      p: 1.0
+      shift_limit:
+      - -0.05
+      - 0.05
+      value: null
+    - __class_fullname__: GridDistortion
+      always_apply: false
+      border_mode: 0
+      distort_limit:
+      - -0.3
+      - 0.3
+      interpolation: 1
+      mask_value: null
+      num_steps: 5
+      p: 1.0
+      value: null
+  - __class_fullname__: Normalize
+    always_apply: false
+    max_pixel_value: 255.0
+    mean:
+    - 0.1307
+    p: 1.0
+    std:
+    - 0.3081

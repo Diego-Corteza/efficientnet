@@ -3,6 +3,7 @@ import json
 import torch
 from typing import List, Dict, Tuple, Callable
 from sklearn.model_selection import train_test_split
+from data_logger import AlbumData
 
 class Training(torch.nn.Sequential):
 
@@ -42,7 +43,8 @@ class Training(torch.nn.Sequential):
   
         self.__device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-    def __call__(self, MAX_EPOCHS):
+    @property
+    def __call__(self):
         gc.collect()
         torch.backends.cudnn.enabled = True
         torch.cuda.empty_cache()
@@ -53,7 +55,7 @@ class Training(torch.nn.Sequential):
         evaluator = create_supervised_evaluator(self.model, self.optimizer,
                                                 self.lossfn, device=self.__device,
                                                 non_blocking=True)
-
+        return trainer, evaluator
 
 
 
@@ -62,6 +64,7 @@ class Training(torch.nn.Sequential):
         # get optimzier and its parameters
         # epochs, lr
         # criterion to use
+        # parameters in parameters.json
 
 
 
@@ -91,8 +94,9 @@ class Training(torch.nn.Sequential):
 
     @staticmethod
     def create_train_dataloader( yaml_data_def: dict):
-        augmentation_list: List = yaml_data_def["train_augmentations"]
-        return DiegosDataloader(augmentation_list)
+
+        augmentation_list = A.load("settings.yaml", data_format="yaml")
+        return AlbumData(transforms=augmentation_list)
 
     @staticmethod
     def create_test_dataloader( yaml_data_def: dict):
