@@ -165,18 +165,6 @@ class Training(torch.nn.Module):
         pass
 
 
-    def feedforward(self):
-        """
-        Method to feedforward data through the net.
-        """
-
-
-    def backprop(self):
-        """
-        Method to backpropagate data through the net.
-        """
-
-
     def classify(self):
         """
         Method to classify samples using the existing model.
