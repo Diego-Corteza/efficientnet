@@ -1,9 +1,16 @@
 import json
+import logging
+import albumentations
 import torch
 import numpy as np
 from sklearn.datasets import fetch_openml
 from typing import List, Dict, Tuple, Callable
 from sklearn.model_selection import train_test_split
+from data_logger import AlbumData
+
+from efficientnet_pytorch import EfficientNet
+from torch.utils.data import DataLoader
+
 
 class Training:
 
@@ -104,8 +111,8 @@ class Training:
 
     @staticmethod
     def create_test_dataloader( yaml_data_def: dict):
-        augmentation_list: List = yaml_data_def["test_augmentations"]
-        return DiegosDataloader(augmentation_list)
+        augmentation_list = albumentations.load("settings.yaml", data_format="yaml")
+        return DataLoader(AlbumData(transforms=augmentation_list), batch_size=32)
 
     def _preprocess(self, x: torch.TensorType) -> None:
         if self.__preprocessor:
