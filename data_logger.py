@@ -12,33 +12,7 @@ import logging
 from typing import Dict, List, Any, Tuple
 
 
-def load(data_dir: str = "/data") -> Tuple[x_train, y_train]:
-    # locate, reshape and separate data into training and validation sets
-    datadir = os.getcwd() + data_dir
 
-    filenames = ["train.csv", "test.csv"]
-    datadict = ODict()
-    for files in filenames:
-        try:
-            with open(datadir + "/" + files, mode="r") as csvfile:
-                datadict[files] = np.loadtxt(csvfile, delimiter=",", skiprows=1)
-                csvfile.close()
-            logging.info("file acquired: ./{}".format(files))
-        except FileNotFoundError:
-            logging.critical("file will be skipped ./{}".format(files))
-    logging.info(datadict.keys(), filenames)
-
-    trainmnist = datadict[filenames[0]]
-    testmnist = datadict[filenames[-1]]
-
-    train_labels = trainmnist[:, 0].reshape(-1)
-    trainmnist = trainmnist[:, 1:].reshape(-1, 28, 28)
-    testmnist = testmnist.reshape(-1, 28, 28)
-    print(trainmnist.shape, train_labels.shape, testmnist.shape)
-
-    x_train, x_test, y_train, y_test = train_test_split(trainmnist, train_labels,
-                                                        test_size=0.2)
-    return x_train, y_train
 
 
 # Albumentations Set up
@@ -52,13 +26,15 @@ class AlbumData(Dataset):
     """
 
     # def __init__(self, x=x_train, y=y_train, transforms=None):
-    def __init__(self, x, y, transforms=None):
+    def __init__(self, transforms=None):
 
         super().__init__()
 
+        x,y = self.load()
         self.x = x
         self.y = y
-        self.transform = transforms
+        self.transform = transforms or self.create_augmentations()
+        self.training_mode = True
 
         if self.y is None:
             self.len = len(self.x)
@@ -91,45 +67,93 @@ class AlbumData(Dataset):
         else:
             return image, label
 
+    def load(self, data_dir: str = "/data") -> Tuple[List, List]:
+        # locate, reshape and separate data into training and validation sets
+        datadir = os.getcwd() + data_dir
+
+        filenames = ["train.csv", "test.csv"]
+        datadict = ODict()
+        for files in filenames:
+            try:
+                with open(datadir + "/" + files, mode="r") as csvfile:
+                    datadict[files] = np.loadtxt(csvfile, delimiter=",", skiprows=1)
+                    csvfile.close()
+                logging.info("file acquired: ./{}".format(files))
+            except FileNotFoundError:
+                logging.critical("file will be skipped ./{}".format(files))
+        # logging.info(datadict.keys(), filenames)
+
+        trainmnist = datadict[filenames[0]]
+        testmnist = datadict[filenames[-1]]
+
+        train_labels = trainmnist[:, 0].reshape(-1)
+        trainmnist = trainmnist[:, 1:].reshape(-1, 28, 28)
+        testmnist = testmnist.reshape(-1, 28, 28)
+        print(trainmnist.shape, train_labels.shape, testmnist.shape)
+
+        x_train, x_test, y_train, y_test = train_test_split(trainmnist, train_labels,
+                                                            test_size=0.2)
+        return x_train, y_train
+
+    def create_augmentations(self):
+        if True: # self.training_mode:
+            albumentations_transform = Compose([ShiftScaleRotate(shift_limit=0.11,
+                                                             scale_limit=0.1,
+                                                             rotate_limit=30,
+                                                             interpolation=cv2.INTER_LANCZOS4,
+                                                             border_mode=cv2.BORDER_CONSTANT,
+                                                             p=0.75),
+                                                Resize(... )
+                                            OneOf([OpticalDistortion(border_mode=cv2.BORDER_CONSTANT,
+                                                                     p=1.0),
+                                                   GridDistortion(border_mode=cv2.BORDER_CONSTANT,
+                                                                  p=1.0)],
+                                                  p=0.75),
+                                            Normalize(mean=[0.1307], std=[0.3081])])
+        else:
+            albumentations_transform = Compose([Normalize(mean=[0.1307], std=[0.3081])])
+        return albumentations_transform
+
+
 
 # class AlbumDataPair(AlbumData):
 #     def __getitem__(self, item):
 #         image = super(AlbumDataPair, self).__getitem__()
 #         label = ...
 
-def main():
-    load("/data")
-    albumentations_transform = Compose([ShiftScaleRotate(shift_limit=0.11,
-                                                         scale_limit=0.1,
-                                                         rotate_limit=30,
-                                                         interpolation=cv2.INTER_LANCZOS4,
-                                                         border_mode=cv2.BORDER_CONSTANT,
-                                                         p=0.75),
-                                        OneOf([OpticalDistortion(border_mode=cv2.BORDER_CONSTANT,
-                                                                 p=1.0),
-                                               GridDistortion(border_mode=cv2.BORDER_CONSTANT,
-                                                              p=1.0)],
-                                              p=0.75),
-                                        Normalize(mean=[0.1307], std=[0.3081])])
-    albumentations_valtransform = Compose([Normalize(mean=[0.1307], std=[0.3081])])
-    load()
-    test_set = AlbumData(x_train, y_train, transforms=albumentations_transform)
-    fig, axes = plt.subplots(5, 5, figsize=(8, 8), sharex="all", sharey="all")
-    _plots = None
-
-    # test visualization
-    testnum = np.random.randint(0, 28000)
-    for axs in axes:
-        for ax in axs:
-            data = test_set.__getitem__(testnum)
-            imgset = ax.imshow(data[0].reshape(28, 28), cmap='gray')
-            imgset = ax.set_title(str(data[1].numpy()))
-            imgset = ax.set_axis_off()
-
-    plt.subplots_adjust(hspace=0.25)
-    plt.tight_layout()
-    plt.show()
-
-
-if __name__ == "__main__":
-    main()
+# def main():
+#     load("/data")
+#     # albumentations_transform = Compose([ShiftScaleRotate(shift_limit=0.11,
+#     #                                                      scale_limit=0.1,
+#     #                                                      rotate_limit=30,
+#     #                                                      interpolation=cv2.INTER_LANCZOS4,
+#     #                                                      border_mode=cv2.BORDER_CONSTANT,
+#     #                                                      p=0.75),
+#     #                                     OneOf([OpticalDistortion(border_mode=cv2.BORDER_CONSTANT,
+#     #                                                              p=1.0),
+#     #                                            GridDistortion(border_mode=cv2.BORDER_CONSTANT,
+#     #                                                           p=1.0)],
+#     #                                           p=0.75),
+#     #                                     Normalize(mean=[0.1307], std=[0.3081])])
+#     # albumentations_valtransform = Compose([Normalize(mean=[0.1307], std=[0.3081])])
+#     load()
+#     test_set = AlbumData(x_train, y_train, transforms=albumentations_transform)
+#     fig, axes = plt.subplots(5, 5, figsize=(8, 8), sharex="all", sharey="all")
+#     _plots = None
+#
+#     # test visualization
+#     testnum = np.random.randint(0, 28000)
+#     for axs in axes:
+#         for ax in axs:
+#             data = test_set.__getitem__(testnum)
+#             imgset = ax.imshow(data[0].reshape(28, 28), cmap='gray')
+#             imgset = ax.set_title(str(data[1].numpy()))
+#             imgset = ax.set_axis_off()
+#
+#     plt.subplots_adjust(hspace=0.25)
+#     plt.tight_layout()
+#     plt.show()
+#
+#
+# if __name__ == "__main__":
+#     main()

@@ -23,21 +23,46 @@ class Training:
     
     """
 
-    def __init__(self, model, parameters_file: str):
+    def __init__(self, parameters_file: str):
 
         super().__init__()
 
         training_parameters = json.load(open(parameters_file))
 
-        self.__model = model
-        self.__training_dataloader = self.create_train_dataloader()
+        self.__model = self.create_model(training_parameters["model"])
+        print(f"model: {self.__model}")
+        logging.info("creating data loader")
+        self.__training_dataloader = self.create_train_dataloader(training_parameters["data_loader_def"])
+        print("created data loader...")
+
+        try:
+            self.batch_size = training_parameters["training_params"]["batch_size"]
+        except KeyError:
+            self.batch_size = 16
+
+        print("so far so good")
         # self.__preprocessor: [torch.nn.Module, None] = None
-        self.__device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+        # self.__device = torch.device("cuda") if torch.cuda.is_available() else
+        self.__device = torch.device("cpu")
 
-        self.lr = training_parameters['lr']
-        self.epochs = training_parameters['epochs']
-        self.MAX_EPOCHS = training_parameters['MAX_EPOCHS']
+        try:
+            self.lr = training_parameters["training_params"]['lr']
+            self.epochs = training_parameters["training_params"]['epochs']
+            self.MAX_EPOCHS = training_parameters["training_params"]['MAX_EPOCHS']
+        except (KeyError, ValueError):
+            self.lr = 0.001
+            self.epochs = 10
+            self.MAX_EPOCHS = 100
 
+        print("doneee")
+
+    def create_model(self, model_params) -> torch.nn.Module:
+        model_type = model_params["type"]
+        if model_type == "efficientnet-b0":
+            # import maravillas model
+            pass
+        model: torch.nn.Module = EfficientNet.from_pretrained('efficientnet-b0')
+        return model
 
     def process_yaml(self):
         # get optimzier and its parameters
@@ -61,8 +86,13 @@ class Training:
     def __update_preprocessor(self, preprocessor: torch.nn.Module) -> None:
         self.__preprocessor = preprocessor
 
+    def create_train_dataloader(self, dataloader_def):
+        dataset = AlbumData()
+        dataloader = DataLoader(dataset, batch_size=1) # self.batch_size, shuffle=True)
+        return  dataloader
+
     @staticmethod
-    def create_train_dataloader():
+    def create_train_dataloader_v2():
         mnist = fetch_openml('mnist_784', version=1, as_frame=False)
         X, Y = mnist["data"], mnist["target"]
 
@@ -148,15 +178,16 @@ class Training:
         pass
 
 
-    def validate(self):
+    def validate_single_epoch(self):
         self.__model.val()
-        for data in self.__validation_dataloader:
+        with torch.no_grad():
+            for data in self.__validation_dataloader:
 
-            # get data
-            images, gts = data
-            preds = self.__model(images)
+                # get data
+                images, gts = data
+                preds = self.__model(images)
 
-            # call metric logger
+                # call metric logger
 
 
         # calculate/call accuracy metrics and logger
