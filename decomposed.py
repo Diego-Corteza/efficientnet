@@ -22,7 +22,7 @@ class Autoencoder(nn.Module):
         input_tensor = torch.randn(1, 3, 224, 224)
 
         decoder = nn.Sequential(
-            # interpolate(input_tensor, (32, 112, 112), mode='bilinear')
+            # interpolate(input_tensor, input_size, mode='bilinear')
             nn.Upsample(size=(3, 225, 225), mode='bilinear'),
             nn.Upsample(size=(16, 112, 112), mode='bilinear'),
             nn.Upsample(size=(32, 112, 112), mode='bilinear'),
