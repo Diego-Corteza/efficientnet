@@ -1,3 +1,4 @@
+import gc
 import json
 import torch
 from typing import List, Dict, Tuple, Callable
@@ -26,16 +27,35 @@ class Training(torch.nn.Sequential):
         super().__init__(model)
 
         training_parameters = json.load(open(parameters_file))
-
+        self.model = model
         self.lr = training_parameters['lr']
         self.epochs = training_parameters['epochs']
         self.MAX_EPOCHS = training_parameters['MAX_EPOCHS']
+        self.lossfn = training_parameters["lossfn"]
+        self.optimizer = training_parameters["optimizer"]
+        self.metrics = training_parameters["metrics"]
+
 
         # self.__training_dataloader = self.create_train_dataloader()
 
         # self.__preprocessor: [torch.nn.Module, None] = None
   
         self.__device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+
+    def __call__(self, MAX_EPOCHS):
+        gc.collect()
+        torch.backends.cudnn.enabled = True
+        torch.cuda.empty_cache()
+
+        trainer = create_supervised_trainer(self.model, self.optimizer,
+                                            self.lossfn, device=self.__device,
+                                            non_blocking=True)
+        evaluator = create_supervised_evaluator(self.model, self.optimizer,
+                                                self.lossfn, device=self.__device,
+                                                non_blocking=True)
+
+
+
 
 
     def process_yaml(self):

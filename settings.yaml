@@ -1,0 +1,7 @@
+# settings.yaml file
+config1:
+  "input shape":(1, 1, 28, 28)
+  "nclasses": 10
+  "block type": "bottleneck"
+  "base_channels": 64
+  "depth": 20

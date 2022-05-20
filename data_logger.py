@@ -9,11 +9,10 @@ from torch.utils.data.dataset import Dataset
 
 import argparse
 import logging
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Tuple
 
 
-def load(data_dir: str = "/data") -> None:
-
+def load(data_dir: str = "/data") -> Tuple[x_train, y_train]:
     # locate, reshape and separate data into training and validation sets
     datadir = os.getcwd() + data_dir
 
@@ -39,16 +38,7 @@ def load(data_dir: str = "/data") -> None:
 
     x_train, x_test, y_train, y_test = train_test_split(trainmnist, train_labels,
                                                         test_size=0.2)
-    x_mnist = testmnist
-
-    for idx in [x_train, x_test, y_train, y_test, x_mnist]:
-        print(f'Shape: {idx.shape}')
-
-    fig, ax = plt.subplots(1, 3, sharex="all", squeeze=True)
-    for imgset, x in zip(ax, [x_train, x_test, x_mnist]):
-        imgset.set_axis_off()
-        mnist_set = imgset.imshow(x[-1], cmap="gray")
-    plt.show()
+    return x_train, y_train
 
 
 # Albumentations Set up
@@ -101,13 +91,14 @@ class AlbumData(Dataset):
         else:
             return image, label
 
+
 # class AlbumDataPair(AlbumData):
 #     def __getitem__(self, item):
 #         image = super(AlbumDataPair, self).__getitem__()
 #         label = ...
 
 def main():
-    load()
+    load("/data")
     albumentations_transform = Compose([ShiftScaleRotate(shift_limit=0.11,
                                                          scale_limit=0.1,
                                                          rotate_limit=30,
@@ -121,8 +112,8 @@ def main():
                                               p=0.75),
                                         Normalize(mean=[0.1307], std=[0.3081])])
     albumentations_valtransform = Compose([Normalize(mean=[0.1307], std=[0.3081])])
-
-    test_set = AlbumData(transforms=albumentations_transform)
+    load()
+    test_set = AlbumData(x_train, y_train, transforms=albumentations_transform)
     fig, axes = plt.subplots(5, 5, figsize=(8, 8), sharex="all", sharey="all")
     _plots = None
 

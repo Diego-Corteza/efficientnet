@@ -1,5 +1,10 @@
 {
     "lr":0.0001,
     "epochs": 100,
-    "MAX_EPOCHS":1000
+    "MAX_EPOCHS":1000,
+    "lossfn": fu.cross_entropy,
+    "optimizer": optim.Adam(self.model.parameters().lr=self.lr,
+    "metrics": {"accuracy":Accuracy(), "loss":Loss(self.lossfn)}
 }
+
+
