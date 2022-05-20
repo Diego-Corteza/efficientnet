@@ -1,53 +1,41 @@
+import json
 import torch
-from sklearn.model_selection import train_test_split
 from typing import List, Dict, Tuple, Callable
+from sklearn.model_selection import train_test_split
 
-class Training(torch.nn.Module):
+class Training(torch.nn.Sequential):
 
     """
-    The class 'train_model', which inherits from the class 'Model', receives four arguments:
+    The class 'train_model', which inherits from the class 'Model', is initialized with a dictionary that contains some parameters for the training:
 
-    - model:  A model (torch.nn.Module).
-    - x_data: Samples (torch.Tensor).
-    - y_data: Targets of the samples (torch.Tensor).
-    - lr:     Learning rate (default = 0.001).
-    - epochs: Number of epochs to train (default = 100).
+    - lr:         Learning rate (default = 0.001).
+    - epochs:     Number of epochs to train (default = 100).
+    - MAX_EPOCHS: Max number of epochs allowed (default = 1000).
 
     And contains six methods:
 
     - train
-    - feedforward
-    - backprop
     - classify
     - evaluate_performance
     - split_data
     
     """
 
-    lr=0.001
-    epochs=100
+    def __init__(self, model, parameters_file: str):
 
-    MAX_EPOCHS = 1000
+        super().__init__(model)
 
-    # def __init__(self, model, x_data, y_data, lr=None, epochs=None):
-    def __init__(self, training_definition: Dict):
+        training_parameters = json.load(open(parameters_file))
 
-        super(Training, self).__init__()
+        self.lr = training_parameters['lr']
+        self.epochs = training_parameters['epochs']
+        self.MAX_EPOCHS = training_parameters['MAX_EPOCHS']
 
-        self.model = model
-        self.x_data = x_data
-        self.y_data = y_data
-        if lr:
-            self.lr = lr
-        if epochs:
-            self.epochs = epochs
+        # self.__training_dataloader = self.create_train_dataloader()
 
-        self.__training_dataloader = self.create_train_dataloader()
-
-        self.__preprocessor: [torch.nn.Module, None] = None
-
+        # self.__preprocessor: [torch.nn.Module, None] = None
+  
         self.__device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-        # device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 
     def process_yaml(self):
