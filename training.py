@@ -1,9 +1,11 @@
 import json
 import torch
+import numpy as np
+from sklearn.datasets import fetch_openml
 from typing import List, Dict, Tuple, Callable
 from sklearn.model_selection import train_test_split
 
-class Training(torch.nn.Sequential):
+class Training:
 
     """
     The class 'train_model', which inherits from the class 'Model', is initialized with a dictionary that contains some parameters for the training:
@@ -23,36 +25,28 @@ class Training(torch.nn.Sequential):
 
     def __init__(self, model, parameters_file: str):
 
-        super().__init__(model)
+        super().__init__()
 
         training_parameters = json.load(open(parameters_file))
+
+        self.__model = model
+        self.__training_dataloader = self.create_train_dataloader()
+        # self.__preprocessor: [torch.nn.Module, None] = None
+        self.__device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
         self.lr = training_parameters['lr']
         self.epochs = training_parameters['epochs']
         self.MAX_EPOCHS = training_parameters['MAX_EPOCHS']
-
-        # self.__training_dataloader = self.create_train_dataloader()
-
-        # self.__preprocessor: [torch.nn.Module, None] = None
-  
-        self.__device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
 
     def process_yaml(self):
         # get optimzier and its parameters
         # epochs, lr
         # criterion to use
-
-
+        'Nada por aqui'
 
     def __call__(self, *args, **kwargs):
-        for epoch in range(self.epochs):
-            self.train(*args, **kwargs)
-            self.validate(*args, **kwargs)
-            self.test(*args...)
-            if epoch >= self.MAX_EPOCHS:
-                break
-        self.finalize()
+        self.train()
         return True
 
     def finalize(self):
@@ -64,15 +58,19 @@ class Training(torch.nn.Sequential):
         """
         self.t_board_logger.close()
 
-
     def __update_preprocessor(self, preprocessor: torch.nn.Module) -> None:
         self.__preprocessor = preprocessor
 
-
     @staticmethod
-    def create_train_dataloader( yaml_data_def: dict):
-        augmentation_list: List = yaml_data_def["train_augmentations"]
-        return DiegosDataloader(augmentation_list)
+    def create_train_dataloader():
+        mnist = fetch_openml('mnist_784', version=1, as_frame=False)
+        X, Y = mnist["data"], mnist["target"]
+
+        X_t = torch.from_numpy(X).float().cuda()
+        Y_t = torch.from_numpy(Y.astype(int)).long().cuda()
+
+        X_train, X_test, y_train, y_test = split_data(X_t, Y_t)
+        return ((X_train, y_train))
 
     @staticmethod
     def create_test_dataloader( yaml_data_def: dict):
@@ -84,8 +82,17 @@ class Training(torch.nn.Sequential):
             x = self.__preprocessor(x)
         return x
 
+
     def get_data(self):
         pass
+
+
+    @staticmethod
+    def cross_entropy(output, target):
+        logits = output[torch.arange(len(output)), target]
+        loss = - logits + torch.log(torch.sum(torch.exp(output), axis=-1))
+        loss = loss.mean()
+        return loss
 
     def train(self):
         """
@@ -93,37 +100,53 @@ class Training(torch.nn.Sequential):
         """
 
         self.__model.train()
+        images, gts = self.__training_dataloader
+        images.to(self.__device)
+        gts.to(self.__device)
 
-        running_loss = 0.0
-        for data in self.__training_dataloader:
-            images, gts = data
+        # x = self._preprocess(x)
 
-            images.to(self.__devide)
-            gts.to(self.__device)
+        epoch_loss = []
+        epoch_batch = 10
 
-            x = self._preprocess(x)
+        for epoch in range(1, self.epochs+1):  
 
-            preds = self.__model(images)
+            y_pred = self.__model(images)
+
+            # Gradiends are turned to zero in order to avoid acumulation
+            self.__model.zero_grad()
 
             # loss
-            train_loss = self.criterion(preds, gts)
+            train_loss = self.cross_entropy(y_pred, gts)
+            epoch_loss.append(train_loss.item())
+
+            # Backprop
             train_loss.backward()
 
-            # updates
-            self.optimizer.step()
+            # # updates
+            with torch.no_grad():
+                for param in self.__model.parameters():
+                    param -= self.lr * param.grad
 
-            running_loss += train_loss.item()
+            # running_loss += train_loss.item()
 
-            # loss logger
-            self.log_metric("train_loss", train_loss)
+            # # loss logger
+            # self.log_metric("train_loss", train_loss)
 
-        return averaged_epoch_loss
+            if not epoch % epoch_batch:
+                print(f"Epoch {epoch}/{self.epochs} Loss {np.mean(epoch_loss):.5f}") 
+
+            if epoch >= self.MAX_EPOCHS:
+                break
+
+        return True
 
 
     def log_metric(self, metric_key: str, metric_value: float) -> None:
         #self.t_board_logger ...
         #self.mlflow_logger ...
         pass
+
 
     def validate(self):
         self.__model.val()
@@ -137,6 +160,7 @@ class Training(torch.nn.Sequential):
 
 
         # calculate/call accuracy metrics and logger
+
 
     def test(self):
         self.__model.val()
