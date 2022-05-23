@@ -1,4 +1,5 @@
 import os
+import numpy as np
 from collections import OrderedDict as ODict
 
 import albumentations
@@ -91,6 +92,10 @@ class AlbumData(Dataset):
         train_labels = trainmnist[:, 0].reshape(-1)
         trainmnist = trainmnist[:, 1:].reshape(-1, 28, 28)
         testmnist = testmnist.reshape(-1, 28, 28)
+
+        trainmnist = np.stack((trainmnist,) * 3, axis=-1)
+        testmnist = np.stack((testmnist,) * 3, axis=-1)
+
         print(trainmnist.shape, train_labels.shape, testmnist.shape)
 
         x_train, x_test, y_train, y_test = train_test_split(trainmnist, train_labels,
