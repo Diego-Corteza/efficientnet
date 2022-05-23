@@ -135,3 +135,131 @@ INFO:root:creater training object...
 INFO:root:entering training
 INFO:root:about to start training
 CRITICAL:root:something went very wrongggggg!!!!!!!!
+INFO:root:creating data loader
+INFO:root:file acquired: ./train.csv
+INFO:root:file acquired: ./test.csv
+INFO:root:creater training object...
+INFO:root:entering training
+INFO:root:about to start training
+CRITICAL:root:something went very wrongggggg!!!!!!!!
+INFO:root:creating data loader
+INFO:root:file acquired: ./train.csv
+INFO:root:file acquired: ./test.csv
+INFO:root:creater training object...
+INFO:root:entering training
+INFO:root:about to start training
+CRITICAL:root:something went very wrongggggg!!!!!!!!
+INFO:root:creating data loader
+INFO:root:file acquired: ./train.csv
+INFO:root:file acquired: ./test.csv
+INFO:root:creater training object...
+INFO:root:entering training
+INFO:root:about to start training
+CRITICAL:root:something went very wrongggggg!!!!!!!!
+INFO:root:creating data loader
+INFO:root:file acquired: ./train.csv
+INFO:root:file acquired: ./test.csv
+INFO:root:creater training object...
+INFO:root:entering training
+INFO:root:about to start training
+CRITICAL:root:something went very wrongggggg!!!!!!!!
+INFO:root:creating data loader
+INFO:root:file acquired: ./train.csv
+INFO:root:file acquired: ./test.csv
+INFO:root:creater training object...
+INFO:root:entering training
+INFO:root:about to start training
+CRITICAL:root:something went very wrongggggg!!!!!!!!
+INFO:root:creating data loader
+INFO:root:file acquired: ./train.csv
+INFO:root:file acquired: ./test.csv
+INFO:root:creater training object...
+INFO:root:entering training
+INFO:root:about to start training
+CRITICAL:root:something went very wrongggggg!!!!!!!!
+INFO:root:creating data loader
+INFO:root:file acquired: ./train.csv
+INFO:root:file acquired: ./test.csv
+INFO:root:creater training object...
+INFO:root:entering training
+INFO:root:about to start training
+CRITICAL:root:something went very wrongggggg!!!!!!!!
+INFO:root:creating data loader
+INFO:root:file acquired: ./train.csv
+INFO:root:file acquired: ./test.csv
+INFO:root:creater training object...
+INFO:root:entering training
+INFO:root:about to start training
+CRITICAL:root:something went very wrongggggg!!!!!!!!
+INFO:root:creating data loader
+INFO:root:file acquired: ./train.csv
+INFO:root:file acquired: ./test.csv
+INFO:root:creater training object...
+INFO:root:entering training
+INFO:root:about to start training
+CRITICAL:root:something went very wrongggggg!!!!!!!!
+INFO:root:creating data loader
+INFO:root:file acquired: ./train.csv
+INFO:root:file acquired: ./test.csv
+INFO:root:creater training object...
+INFO:root:entering training
+INFO:root:about to start training
+INFO:root:creating data loader
+INFO:root:file acquired: ./train.csv
+INFO:root:file acquired: ./test.csv
+INFO:root:creater training object...
+INFO:root:entering training
+INFO:root:about to start training
+INFO:root:creating data loader
+INFO:root:file acquired: ./train.csv
+INFO:root:file acquired: ./test.csv
+INFO:root:creater training object...
+INFO:root:entering training
+INFO:root:about to start training
+INFO:root:creating data loader
+INFO:root:file acquired: ./train.csv
+INFO:root:file acquired: ./test.csv
+INFO:root:creater training object...
+INFO:root:entering training
+INFO:root:about to start training
+INFO:root:creating data loader
+INFO:root:file acquired: ./train.csv
+INFO:root:creating data loader
+INFO:root:file acquired: ./test.csv
+DEBUG:matplotlib.pyplot:Loaded backend agg version unknown.
+INFO:root:file acquired: ./train.csv
+INFO:root:file acquired: ./test.csv
+DEBUG:matplotlib.pyplot:Loaded backend agg version unknown.
+INFO:root:creater training object...
+INFO:root:entering training
+INFO:root:about to start training
+INFO:root:creating data loader
+INFO:root:file acquired: ./train.csv
+INFO:root:file acquired: ./test.csv
+INFO:root:creater training object...
+INFO:root:entering training
+INFO:root:about to start training
+INFO:root:creating data loader
+INFO:root:file acquired: ./train.csv
+INFO:root:file acquired: ./test.csv
+INFO:root:creater training object...
+INFO:root:entering training
+INFO:root:about to start training
+INFO:root:creating data loader
+INFO:root:file acquired: ./train.csv
+INFO:root:file acquired: ./test.csv
+INFO:root:creater training object...
+INFO:root:entering training
+INFO:root:about to start training
+INFO:root:creating data loader
+INFO:root:file acquired: ./train.csv
+INFO:root:file acquired: ./test.csv
+INFO:root:creater training object...
+INFO:root:entering training
+INFO:root:about to start training
+INFO:root:creating data loader
+INFO:root:file acquired: ./train.csv
+INFO:root:file acquired: ./test.csv
+INFO:root:creater training object...
+INFO:root:entering training
+INFO:root:about to start training

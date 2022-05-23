@@ -48,9 +48,9 @@ class Training:
             self.batch_size = 16
 
         print("so far so good")
-        # self.__preprocessor: [torch.nn.Module, None] = None
-        # self.__device = torch.device("cuda") if torch.cuda.is_available() else
-        self.__device = torch.device("cpu")
+        self.__preprocessor: [torch.nn.Module, None] = None
+        self.__device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+        # self.__device = torch.device("cpu")
 
         try:
             self.lr = training_parameters["training_params"]['lr']
@@ -193,7 +193,7 @@ class Training:
 
             # tensorboard logging
             # mlflow logging
-            print(train_loss)
+            print(train_loss.item())
 
         # Backprop
         # train_loss.backward()

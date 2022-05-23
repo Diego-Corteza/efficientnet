@@ -54,14 +54,15 @@ class AlbumData(Dataset):
     def __getitem__(self, item):
         if self.y is not None:
             image, label = self.x[item], self.y[item]
-            image = np.expand_dims(image, -1).astype(np.uint8)
+            # image = np.expand_dims(image, -1).astype(np.uint8)
+            image = image.astype(np.uint8)
             label = torch.from_numpy(np.array(label)).type(torch.LongTensor)
         else:
             image, label = self.x[item], None
 
         if self.transform is not None:
             aug_img = self.transform(image=image)
-            image = aug_img["image"].astype(np.uint8).reshape(28, 28, 1)
+            image = aug_img["image"].astype(np.uint8) #.reshape(28, 28, 3)
 
         image = transforms.ToTensor()(image)
 
